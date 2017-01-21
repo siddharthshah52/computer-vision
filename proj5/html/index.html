@@ -1,0 +1,236 @@
+<html>
+<head>
+<title>Face Detection Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;	
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1>Siddharth Shah (sshah418) </h1>
+</div>
+</div>
+<div class="container">
+
+<h2> Project 5 / Face Detection with a Sliding Window</h2>
+
+<p> 	In this project we will try to recognize faces in an image. The idea is to generate hog (Histogram of Oriented Gradients) feature descriptors for both positive and negative images. In this context positive and negative means image patches containing faces and non-faces respectively. Once we have the feature descriptors for positive and negative samples we will train a classifier (linear SVM) using it. The next step will be to use the w and b obtained from our linear SVM and run a detector which will try to detect faces in an image. Specifically, in run detector we consider the image at various scales. For each scale we compute the hog feature map for the image and then go through blocks of size t &times; t where t = (template size) / (cell size) each time calculating the confidence = w<sup>T</sup>*x + b. If the confidence is above a certain threshold then the patch corresponding to the current patch of hog map being considered is determined as a candidate for being a face. We also need to take effect of scaling factor when defining the bounding boxes. This can be handled by multiplying the bounding box co-ordinates by (scaling_factor ^ (level - 1)) where scaling_factor is the factor used for recursively downscaling the images and level is the level in the image pyramid that we are considering. After this step we will get lot of bounding boxes near to each other. By doing non-maximum suppression we can get one bounding box for each such group. </p>
+
+<p> 	<h3>Hard Negative Mining (Graduate/Extra credit): </h3> The concept of hard negative mining is simple i.e. we want to determine negative samples that are hard(difficult) for the classifier and add such hard samples to our training data. Here, for the negative set we will initially consider random negative features from non face images. After this we will train our linear SVM and get the model outputs viz. w and b. Using it we will run detector on the non face images and for whatever patches that are classified as faces we will extract hog descriptors from them, add them to our negative set and rerun the linear SVM classifier to get new w and b.</p>
+
+<p>		<h3>Hog Implementation (Graduate/Extra credit): </h3> I wrote my own implementation of hog. My implementation calculates hog descriptors based on the Dalal and Triggs method and not the default UoCTTI variant of vl_hog. Following steps are required for calculating the hog descriptors:
+<ol>
+<li>Gradient computation: I computed the gradients using 1-D centered, point discrete derivative mask in horizontal direction</li>	
+<li>Orientation binning: Here I create a histogram of gradient orientations ignoring the sign. The histogram contains 9 bins i.e a bin width of 20&deg; and one histogram is calculated per cell.</li>
+<li>Descriptor blocks and normalization: I used the R-HoG approach i.e. cells are grouped into blocks of size 2&times;2 and the histograms for these 4 cells are concatenated and L2 normalized to give a 36 dimensional vector. Therefore, the hog descriptor map of size m&times;n&times;9 is transformed to a m&times;n&times;36 size.</li>
+</ol>
+
+In the below results table hard negative mining is always used.
+</p>
+
+<h3>Results</h3>
+
+<table border=1>
+<tr><th>Lambda</th><th>Hog cell size</th><th>Scaling Factor</th><th>Levels</th><th>Threshold</th><th>Average Precision (%)</th></tr>
+<tr><td>0.0001</td><td>6</td><td>0.75</td><td>10</td><td>0.7</td><td>81.5</td></tr>
+<tr><td>0.0001</td><td>6</td><td>0.75</td><td>10</td><td>0.1</td><td>84.3</td></tr>
+<tr><td>0.0001</td><td>6</td><td>0.75</td><td>10</td><td>0.4</td><td>82.6</td></tr>
+<tr><td>0.0001</td><td>6</td><td>0.9</td><td>30</td><td>0.7</td><td>86.7</td></tr>
+<tr><td>0.0001</td><td>6</td><td>0.9</td><td>30</td><td>0.1</td><td>90.2</td></tr>
+<tr><td>0.0001</td><td>6</td><td>0.9</td><td>30</td><td>0.4</td><td>88.6</td></tr>
+
+<tr><td>0.0001</td><td>4</td><td>0.75</td><td>10</td><td>0.7</td><td>82.6</td></tr>
+<tr><td>0.0001</td><td>4</td><td>0.75</td><td>10</td><td>0.1</td><td>86.3</td></tr>
+<tr><td>0.0001</td><td>4</td><td>0.75</td><td>10</td><td>0.4</td><td>84.8</td></tr>
+<tr><td>0.0001</td><td>4</td><td>0.9</td><td>30</td><td>0.7</td><td>88.8</td></tr>
+<tr><td>0.0001</td><td>4</td><td>0.9</td><td>30</td><td>0.1</td><td>92.0</td></tr>
+<tr><td>0.0001</td><td>4</td><td>0.9</td><td>30</td><td>0.4</td><td>90.1</td></tr>
+
+<tr><td>0.001</td><td>3</td><td>0.75</td><td>10</td><td>0.7</td><td>84.0</td></tr>
+<tr><td>0.001</td><td>3</td><td>0.75</td><td>10</td><td>0.1</td><td>88.8</td></tr>
+<tr><td>0.001</td><td>3</td><td>0.75</td><td>10</td><td>0.4</td><td>86.9</td></tr>
+<tr><td>0.001</td><td>3</td><td>0.9</td><td>30</td><td>0.7</td><td>90.4</td></tr>
+<tr><td>0.001</td><td>3</td><td>0.9</td><td>30</td><td>0.1</td><td>93.1</td></tr>
+<tr><td>0.001</td><td>3</td><td>0.9</td><td>30</td><td>0.4</td><td>92.5</td></tr>
+
+<tr><td>0.0001</td><td>3</td><td>0.75</td><td>10</td><td>0.7</td><td>84.0</td></tr>
+<tr><td>0.0001</td><td>3</td><td>0.75</td><td>10</td><td>0.1</td><td>88.3</td></tr>
+<tr><td>0.0001</td><td>3</td><td>0.75</td><td>10</td><td>0.4</td><td>86.3</td></tr>
+<tr><td>0.0001</td><td>3</td><td>0.9</td><td>30</td><td>0.7</td><td>90.8</td></tr>
+<tr><td>0.0001</td><td>3</td><td>0.9</td><td>30</td><td>0.1</td><td>93.3</td></tr>
+<tr><td>0.0001</td><td>3</td><td>0.9</td><td>30</td><td>0.4</td><td>91.9</td></tr>
+
+<tr><td>0.00001</td><td>3</td><td>0.75</td><td>10</td><td>0.7</td><td>81.9</td></tr>
+<tr><td>0.00001</td><td>3</td><td>0.75</td><td>10</td><td>0.1</td><td>86.3</td></tr>
+<tr><td>0.00001</td><td>3</td><td>0.75</td><td>10</td><td>0.4</td><td>84.4</td></tr>
+<tr><td>0.00001</td><td>3</td><td>0.9</td><td>30</td><td>0.7</td><td>88.7</td></tr>
+<tr><td>0.00001</td><td>3</td><td>0.9</td><td>30</td><td>0.1</td><td>91.3</td></tr>
+<tr><td>0.00001</td><td>3</td><td>0.9</td><td>30</td><td>0.4</td><td>90.0</td></tr>
+</table>
+
+<p>My hog implementation runs slower but the average precision obtained is comparable.</p>
+
+<center>
+<p>
+Visualizations for the best configuration (keeping in account reasonable precision for high recall): (lambda = 0.0001, hog cell size = 3, scaling factor = 0.9, levels = 30, threshold = 0.4) for average precision of 91.9
+Face template HoG visualization
+<p>
+<img src="hog_template.png">
+<p>
+Precision Recall curve.
+<p>
+<img src="average_precision.png">
+<p>
+Some examples
+<table border="1">
+<tr>
+<img src="detections_aerosmith-double.jpg.png" width="49%">
+<img src="detections_albert.jpg.png" width="49%">
+</tr>
+<tr>
+<img src="detections_window.jpg.png" width="49%">
+<img src="detections_cards-perp-sml.jpg.png" width="49%">
+</tr>
+<tr>
+<img src="detections_J-L_Picard.Baldy.jpg.png" width="49%">
+<img src="detections_nens.jpg.png" width="49%">
+</tr>
+<tr>
+<img src="detections_tori-crucify.jpg.png" width="49%">
+<img src="detections_voyager.jpg.png" width="49%">
+</tr>
+</table>
+
+</center>
+
+</body>
+</html>

@@ -1,0 +1,5 @@
+Following graduate/extra credit have been implemented:
+
+1. Hard negative mining: Change the boolean use_negative_mining to true or false depending on what you want. The run_detector has also been modified to take in a boolean value. This value allows it to decide whether non-maximum suppression has to be used or not.
+
+2. Hog implementation: For running the hog implementation. calls to vl_hog in get_positive_features, get_negative_features, get_hard_negative_features and run_detector have to be commented and uncomment the calls to my_hog. Since the dimensionality given by my_hog is different. We also need to comment/uncomment feature vectors which have been defined with some fixed size in the above files. Also in proj5.m file comment/uncomment definitions of n_hog_cells and imhog in step 3 appropriately.
