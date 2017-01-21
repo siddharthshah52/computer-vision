@@ -1,0 +1,289 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;	
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 960px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+td img {
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1><span style="color: #DE3737">Siddharth Shah (GT user name: sshah418)</span></h1>
+</div>
+</div>
+<div class="container">
+
+<h2>Project 1: Image Filtering and Hybrid Images</h2>
+
+<p> 	The my_imfilter.m code applies an image filter on the image using the following steps: </p>
+
+<ol>
+<li><b>Pad the image by reflecting the border pixels - </b>Given that the filter dimensions (let's say m &times; n) are odd we will have to pad the image with &lfloor;m/2&rfloor; pixels on the top and bottom and &lfloor;n/2&rfloor; pixels on the left and right. I decided to pad the image by mirror reflecting the pixels along the border. This avoided the annoying effect of blackish border in the output image when padding with zeros.</li>
+<li><b>Reshape the padded image if it is a grayscale image - </b>I decided to run 3 nested for loops one along each dimension to fill out the output image pixel by pixel. For this purpose in case of grayscale image I reshaped the image such that its third dimension is 1.</li>
+<li><b>Initialize output image - </b>The output image is initialized with the same dimension as that of the input image (let's say h &times; w &times; d) and filled with all zeros.</li>
+<li><b>Apply filter - </b>The filter is applied using three nested for loops. The code is as shown below:
+<pre><code>
+for i = 1+m:h+m
+    for j = 1+n:w+n
+        for k = 1: d
+            output_im(i-m, j-n, k) = sum(dot(padded_im(i-m:i+m, j-n:j+n, k), filter));
+        end
+    end
+end
+</code></pre>Here m and n are filter_height/2 and filter_width/2 respectively. For the height I start from 1+m to h+m where h is height of the input image. The output image's pixel indices range from 1 to h whereas for padded image it ranges from 1 to h+2m as m pixels are padded to both top and bottom. Therefore, I assign indices from i-m in the output image and from the current index 'i' take m pixels in both direction in the padded image. Similarly for the width and we also choose the third dimension we are working with. I take the dot product between this window extracted from the padded image and the filter. MATLAB returns the dot product column wise so there is a need to sum up the results to obtain the output image's pixel value.</li>
+<li><b>Reshape back if grayscale image and return the output - </b>Reshape the output to two dimensions in case of grayscale image by removing the 1 from the third dimension and return the output image.</li>
+</ol>
+
+<h3>The results obtained by applying the various filters using my_imfilter.m are shown below:</h3>
+
+<table border=1>
+<caption>Filters applied (<i>from left to right and top to bottom</i>): identity, box, gaussian, sobel, discrete laplacian, high pass alternative</caption>
+<tr>
+<td>
+<img src="identity_image.jpg" width="33%"/>
+<img src="blur_image.jpg"  width="33%"/>
+<img src="large_blur_image.jpg" width="33%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="sobel_image.jpg" width="33%"/>
+<img src="laplacian_image.jpg"  width="33%"/>
+<img src="high_pass_image.jpg" width="33%"/>
+</td>
+</tr>
+
+</table>
+
+<div style="clear:both" >
+<p> 	To create hybrid images the following three steps are used: </p>
+<ol>
+	<li><b>Get low frequencies for image 1</b> by removing the high frequencies using blurring</li>
+	<li><b>Get high frequencies for image 2</b> by first getting low frequencies similar to step 1 and then subtracting these low frequencies from the original image 2</li>
+	<li><b>Combine</b> the two intermediate images by adding them to create the hybrid image</li>
+</ol>
+
+<h3>Some of the hybrid image examples are shown below with input image 1, low frequency image 1, input image 2 and high frequency image 2 respectively and the final output downsampled at multiple scales:</h3>
+
+<table border=1>
+<tr>
+<td>
+<img src="dog.bmp" width="24%"/>
+<img src="ex1_low_frequencies.jpg" width="24%"/>
+<img src="cat.bmp"  width="24%"/>
+<img src="ex1_high_frequencies.jpg" width="24%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="ex1_hybrid_image_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+
+<br /><br />
+
+<table border=1>
+<tr>
+<td>
+<img src="motorcycle.bmp" width="24%"/>
+<img src="ex2_low_frequencies.jpg" width="24%"/>
+<img src="bicycle.bmp"  width="24%"/>
+<img src="ex2_high_frequencies.jpg" width="24%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="ex2_hybrid_image_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+
+<br /><br />
+
+<table border=1>
+<tr>
+<td>
+<img src="plane.bmp" width="24%"/>
+<img src="ex3_low_frequencies.jpg" width="24%"/>
+<img src="bird.bmp"  width="24%"/>
+<img src="ex3_high_frequencies.jpg" width="24%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="ex3_hybrid_image_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+
+<br /><br />
+
+<table border=1>
+<tr>
+<td>
+<img src="marilyn.bmp" width="24%"/>
+<img src="ex4_low_frequencies.jpg" width="24%"/>
+<img src="einstein.bmp"  width="24%"/>
+<img src="ex4_high_frequencies.jpg" width="24%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="ex4_hybrid_image_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+
+<br /><br />
+
+<table border=1>
+<tr>
+<td>
+<img src="submarine.bmp" width="24%"/>
+<img src="ex5_low_frequencies.jpg" width="24%"/>
+<img src="fish.bmp"  width="24%"/>
+<img src="ex5_high_frequencies.jpg" width="24%"/>
+</td>
+</tr>
+
+<tr>
+<td>
+<img src="ex5_hybrid_image_scales.jpg" width="100%"/>
+</td>
+</tr>
+
+</table>
+</body>
+</html>

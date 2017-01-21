@@ -1,0 +1,2 @@
+Run the proj1_test_filtering.m file to test the my_imfilter.m file which applies various filters on the cat image. 
+Run the proj1.m file to create hybrid images. This file should be edited in case the 2 input images or the cutoff frequency for the low and high frequency image needs to be changed.
