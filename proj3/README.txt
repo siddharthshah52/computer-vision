@@ -1,0 +1,1 @@
+Run the files proj3_part1.m, proj3_part2.m, proj3_part3.m to see outputs for part 1, 2 and 3 of the project respectively. For part 2 of the project to implement unnormalized version simply comment out lines 20 to 30 and line 47. Also for part 3 you will have to run the vlfeat setup before running the program.

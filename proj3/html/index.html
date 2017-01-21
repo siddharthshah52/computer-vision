@@ -1,0 +1,249 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;	
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1>Siddharth Shah (GT id: sshah418)</h1>
+</div>
+</div>
+<div class="container">
+
+<h2> Project 3 / Camera Calibration and Fundamental Matrix Estimation with RANSAC</h2>
+
+<div style="clear:both">
+<h3>Camera Projection Matrix</h3>
+
+<p> 	For camera calibration we will use the data which consists of points from world co-ordinates to co-ordinates on image plane. We will specifically form the below shown matrix: <br>
+<img src="camera_calibration.gif"> <br> where [X<sub>1</sub>, Y<sub>1</sub>, Z<sub>1</sub>] are the world co-ordinates, [u<sub>1</sub>, v<sub>1</sub>] are image plane co-ordinates. We will then use SVD to find the solution for the equations we obtain. The matrix V i.e. the right singular vectors after reshaping into 4 &times 3 and taking the transpose will give us the projection matrix M. The matrix M can be seen as (Q|m<sub>4</sub>). The camera center is given by -Q<sup>-1</sup>m<sub>4</sub>. The projection matrix M obtained is: <br><img src="projection_matrix.gif"><br> The residual obtained is 0.0445 and the camera center C is <-1.5127, -2.3517, 0.2826>. Below is the visualization of the solution obtained for the equations using SVD: <br> <img src="svd_solution.png" height="500"> <br> Shown below is the visualization of the points in the real world 3D space and the location of camera center: <img src="3d_vis_with_camera_center.png" height="500"></p>
+
+<div style="clear:both">
+<h3>Fundamental Matrix Estimation</h3>
+
+<p> 	For estimating the fundamental matrix we will use the below shown equation: <br><img src="fundamental_matrix_equation.png" width="500"><br> where f<sub>ij</sub> are entries of the fundamental matrix and [u<sub>1</sub>, v<sub>1</sub>] and [u'<sub>1</sub>, v'<sub>1</sub>] are the co-ordinates of the matched pair of points in the two images. We will get one equation for every pair of matched points. Similar, to part 1 we can form a matrix from these equations and perform the SVD to solve the equations. Since, the fundamental matrix is a rank 2 matrix we will set the last element of the diagonal matrix S to be 0 and calculate U * S * V' to get the rank 2 fundamental matrix. This gives reasonable performance. However, the performance can be improved by normalizing the co-ordinates. To normalize we perform the following transformation: <br><img src="normalization.png" width="500"><br> where u and v are unnormalized co-ordinates and u' and v' are normalized and T = <img src="transformation_matrix.png" width="150"> is the transformation matrix. Here, -c<sub>u</sub> and -c<sub>v</sub> are the means for u and v respectively. s defines scale and out of the number of different options for s, I chose s to be the standard deviation obtained after subtracting the means. We obtain then obtain the original fundamental matrix by T<sub>b</sub><sup>T</sup> * F<sub>norm</sub> * T<sub>a</sub>. The estimated fundamental matrix using normalization trick is: <br><img src="fundamental_matrix.gif"><br>This gives very good performance as can be seen by the epipolar lines and the matches on the below shown pair of images: 
+<table border=1>
+<tr>
+<td>
+<img src="epipolar_a.png" width="49%"/>
+<img src="epipolar_b.png"  width="49%"/>
+</td>
+</tr>
+</table>
+</p>
+
+<div style="clear:both">
+<h3>Fundamental Matrix with RANSAC</h3>
+
+<p> 	Using a pipeline like SIFT for finding matched pairs often gives spurious matches. For this purpose the least squares method fails as it is sensitive to outliers. We can use RANSAC for this purpose. For RANSAC we will choose some small number of points and estimate the fundamental matrix. The fundamental matrix has the property that x' * F * x = 0 for points that completely agree with the fundamental matrix. We define a threshold and find all pairs of matched points for which the absolute value of x' * F * x value lies within the threshold. These points are known as inliers. We perform RANSAC for 2000 iterations randomly picking some points each iteration. The fundamental matrix giving maximum inliers is the fundamental matrix obtained from the RANSAC method. Below is the output (top 30 matches) for various images after using the normalization trick when estimating the fundamental matrix: 
+<table border=1>
+<tr>
+<td>
+<img src="mount_rushmore_epipolar_a.png" width="49%"/>
+<img src="mount_rushmore_epipolar_b.png"  width="49%"/>
+</td>
+<tr>
+<td>
+<img src="mount_rushmore.jpg" width="99%"/>
+</td>
+</tr>
+</tr>
+<tr>
+<td>
+<img src="notre_dame_epipolar_a.png" width="49%"/>
+<img src="notre_dame_epipolar_b.png"  width="49%"/>
+</td>
+<tr>
+<td>
+<img src="notre_dame.jpg" width="99%"/>
+</td>
+</tr>
+</tr>
+<tr>
+<td>
+<img src="episcopal_gaudi_epipolar_a.png" width="49%"/>
+<img src="episcopal_gaudi_epipolar_b.png"  width="49%"/>
+</td>
+<tr>
+<td>
+<img src="episcopal_gaudi.jpg" width="99%"/>
+</td>
+</tr>
+</tr>
+<tr>
+<td>
+<img src="woodruff_dorm_epipolar_a.png" width="49%"/>
+<img src="woodruff_dorm_epipolar_b.png"  width="49%"/>
+</td>
+<tr>
+<td>
+<img src="woodruff_dorm.jpg" width="99%"/>
+</td>
+</tr>
+</tr>
+</table>
+</p>
+
+<div style="clear:both" >
+<h3>Effect of normalization</h3>
+<p> 	Below is a comparison of outputs for Episcopal Gaudi by unnormalized and the normalized methods. We can clearly see that normalization gives us much better results.
+<table border=1>
+<tr>
+<td>
+<img src="episcopal_gaudi_unnormalized_epipolar_a.png" width="49%"/>
+<img src="episcopal_gaudi_unnormalized_epipolar_b.png"  width="49%"/>
+</td>
+<tr>
+<td>
+<img src="episcopal_gaudi_unnormalized.jpg" width="99%"/>
+</td>
+</tr>
+</tr>
+<tr>
+<td>
+<img src="episcopal_gaudi_epipolar_a.png" width="49%"/>
+<img src="episcopal_gaudi_epipolar_b.png"  width="49%"/>
+</td>
+<tr>
+<td>
+<img src="episcopal_gaudi.jpg" width="99%"/>
+</td>
+</tr>
+</tr>
+</table>
+</p>
+
+</div>
+</body>
+</html>
