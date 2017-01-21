@@ -1,0 +1,6 @@
+To run the code :
+
+1. Choose the image pair and its ground truth values.
+2. Use the get_interest_points.m to get the x and y co-ordinates of the key points for each image.
+3. Use the get_features to get 128 dimensional SIFT-like features from the key points. The feature width has been set at 32 as it was giving better performance than 16.
+4. Match the features between the two images. The match features implementation is set to use kd-tree. For the pairwise distance approach comment the line that uses knnsearch and uncomment the three code lines on top of it (To use knnsearch Statistical and Machine Learning Toolbox is needed). I have also tried the PCA variant wherein I apply the PCA basis on the features to reduce it to 32 dimensions. The PCA basis has been obtained from the pca_sift.m file. This file reads all the jpg images provided in the extra_data.zip file (copy pasted and placed in a single folder as opposed to the existing nested folder structure) and applies PCA. Choose between PCA or non-PCA in proj2.m file by commenting the appropriate line.

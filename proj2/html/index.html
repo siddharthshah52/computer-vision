@@ -1,0 +1,349 @@
+<html>
+<head>
+<title>Computer Vision Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;	
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 960px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+td img {
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1><span style="color: #DE3737">Siddharth Shah (GT user name: sshah418)</span></h1>
+</div>
+</div>
+<div class="container">
+
+<h2>Project 2: Local Feature Matching</h2>
+
+<p> 	The goal of the assignment is to do local feature matching using SIFT like pipeline. The pipeline consists of three main steps viz. interest point detection, local feature description and feature matching. The algorithmic and implementation details for each of the steps is mentioned below</p>
+
+<ol>
+<li><b>Interest point detection:</b><br>
+<p>		Here we first calculate the gradient at each pixel in the x and y directions (let's say I<sub>x</sub> and I<sub>y</sub>). We then calculate three different gradient maps viz. I<sub>x</sub><sup>2</sup>, I<sub>y</sub><sup>2</sup> and I<sub>x</sub>I<sub>y</sub>. We then apply a large gaussian filter to the three maps that we obtained. I chose to apply a feature_width &times feature_width gaussian filter. I applied this in the form of two linear filters as opposed to the square filter to speed up the operation. We can then use the Harris corner detector formula to obtain corner points in the image. The formula in code is: 
+<pre><code>
+corner_map = gauss_Ix2.*gauss_Iy2 - gauss_IxIy.^2 - alpha * (gauss_Ix2 + gauss_Iy2).^2;
+</code></pre>
+This will give us a lot of points. We will now do non-maximal suppression so that we only keep local maxima in a window. I used the function ordfilt2 for this purpose. This function takes in three arguments viz. the image (in our case the corner map we have created, the position of element that we want when the elements are sorted in ascending order and the matrix that we want to apply to the window. Consider the below mentioned line of code: 
+<pre><code>
+corner_map2 = corner_map > ordfilt2(corner_map, 8, [1, 1, 1; 1, 0, 1; 1, 1, 1]);
+</code></pre>
+Here ordfilt2 multiplies the matrix [1, 1, 1; 1, 0, 1; 1, 1, 1] to every window at each pixel. This matrix will zero out the center element and finds out the eighth minimum (i.e. maximum in this case) of the remaining elements. We then do element-wise comparison of the original corner map and the ordfilt2 output. If the element in corner_map is greater then the element we zeroed out then it is a local maxima otherwise that point is simply zeroed out and not considered as a corner. We will still get a lot of points and need to decrease them to avoid spurious matches. The corner points give a lot of spurious matches and we ignore them. Basically I zeroed out all pixels within feature_width distance from boundary. I also zeroed out all pixels that were 0.01 * graythresh of the corner_map. According to Matlab's documentation <i>level = graythresh(I) computes a global threshold (level) that can be used to convert an intensity image to a binary image with im2bw. level is a normalized intensity value that lies in the range [0, 1].</i> My intuition is that we can use the value returned by graythresh method to weed out local maximas that are not maximum enough when compared to the other local maximas in the image. The output obtained after this was much cleaner in terms of the number of points that were considered as corners. The corner points obtained can be seen in the outputs for the Notre Dame pair of images below:
+</p>
+<table border=1>
+<tr>
+<td>
+<img src="notre_dame1_corners.jpg" width="49%"/>
+<img src="notre_dame2_corners.jpg"  width="49%"/>
+</td>
+</tr>
+</table><br>
+</li>
+<li><b>Local feature description: </b>
+<p>		In this step we first calculate the gradient magnitude and gradient direction at each pixel in the image. Now, for each interest point we extract a patch of feature_width &times feature_width. We then divide this region into further 4 &times 4 blocks by looping in each direction with a step size of feature_width / 4. For each such subpatch we will create a histogram by adding the gradient magnitude to the correct bin based on the gradient direction. The 360&deg space is divided into 8 bins. The imgradient function of Matlab outputs gradient direction in the range of [-180,180]. Therefore, to find the bin index we use the following formula:
+<pre><code>
+bin_idx = min(floor((Gdir_subpatch(l) + 180)/45) + 1, 8);
+</code></pre>
+Here we take the l<sup>th</sup> subpatch and transform its range from [-180,180] to [0,360], divide by 45(since 8 bins) and add 1 since Matlab uses 1 indexing. We need to take min with 8 as 360&deg is inclusive and will produce the invalid bin index of 9 for this special case. We concatenate the outputs of the histogram obtained from each subpatch in the feature_width &times feature_width patch. Finally, we normalize the feature before adding it to our features set. The dimensions of the features matrix will be (number of key points) &times 128.
+</p><br></li>
+<li><b>Feature matching: </b>
+<p>		This algorithm looks at the ratio of the distance between the nearest neighbor and the second nearest neighbor. The smaller this ratio the better as this means that the nearest neighbor for the key point under consideration strongly matches the key point. Using pdist2 function of matrix we can calculate the pairwise distance function between all the pairs formed by the two feature sets. We then simply find the nearest 2 neighbors and calculate the ratio and noting the nearest neighbor. The top num_features points(i.e. their indices) are then returned. 
+</p></li>
+</ol>
+
+<p>		I also played around with some parameters and observed the following results (on the Notre Dame pair):
+
+<table border=1 align="center">
+<tr>
+	<th>
+		<h4>Feature width</h4>
+	</th>
+	<th>
+		<h4>Accuracy (%)</h4>
+	</th>
+</tr>
+<tr>
+	<td align="center">16</td>
+	<td align="center">95</td>
+</tr>
+<tr>
+	<td align="center">32</td>
+	<td align="center">99</td>
+</tr>
+</table>
+
+<table border=1 align="center">
+<tr>
+	<th>
+		<h4>Number of histogram orientations</h4>
+	</th>
+	<th>
+		<h4>Accuracy (%)</h4>
+	</th>
+</tr>
+<tr>
+	<td align="center">4</td>
+	<td align="center">97</td>
+</tr>
+<tr>
+	<td align="center">8</td>
+	<td align="center">99</td>
+</tr>
+</table>
+
+I tried two normalization schemes viz. zero mean unit variance and dividing by the L2 norm. I did not notice any difference in accuracy.
+</p>
+
+<p>		Following are the results obtained from the best combination of parameters for each pair of image:
+</p>
+
+<table border=1>
+<tr>
+	<th>
+		<h3>Notre Dame : 99% accuracy</h3>
+	</th>
+</tr>
+<tr>
+<td>
+<img src="notre_dame_vis_dots.jpg" width="99%"/>
+</td>
+</tr>
+<tr>
+<td>
+<img src="notre_dame_eval.jpg" width="99%"/>
+</td>
+</tr>
+<tr>
+<td>
+<img src="notre_dame_vis_arrows.jpg"  width="99%"/>
+</td>
+</tr>
+
+</table>
+<br>
+
+<table border=1>
+<tr>
+	<th>
+		<h3>Mount Rushmore : 100% accuracy</h3>
+	</th>
+</tr>
+<tr>
+<td>
+<img src="mount_rushmore_vis_dots.jpg" width="99%"/>
+</td>
+</tr>
+<tr>
+<td>
+<img src="mount_rushmore_eval.jpg" width="99%"/>
+</td>
+</tr>
+<tr>
+<td>
+<img src="mount_rushmore_vis_arrows.jpg"  width="99%"/>
+</td>
+</tr>
+
+</table>
+<br>
+
+<table border=1>
+<tr>
+	<th>
+		<h3>Episcopal Gaudi : 22% accuracy</h3>
+	</th>
+</tr>
+<tr>
+<td>
+<img src="episcopal_gaudi_vis_dots.jpg" width="99%"/>
+</td>
+</tr>
+<tr>
+<td>
+<img src="episcopal_gaudi_eval.jpg" width="99%"/>
+</td>
+</tr>
+<tr>
+<td>
+<img src="episcopal_gaudi_vis_arrows.jpg"  width="99%"/>
+</td>
+</tr>
+
+</table>
+<br>
+
+<div style="clear:both">
+<h3>Additional Improvements</h3>
+
+<p> 	<b>kd-tree: </b><br>Instead of calculating the pairwise distances we can make the code faster by making use of kd-trees. kd-trees divide the data space by partitioning it along alternate axis. While searching starting from the root we go left or right depending on whether the value is smaller or larger than the current node. We keep doing this until we hit a leaf. The tree is then unwinded and if the current node has distance less than the current nearest then it is the nearest node. We also have to search whether there are closer points on the other side of the tree. This can be done by creating a hypersphere around the current point with the radius same as the distance of nearest point and checking whether it intersects the splitting hyperplane on the other side. If yes then we need to consider points on the other side of the tree as well and follow the same recursive search or else we can continue unwinding until we reach the root.
+<br>
+<b>PCA: </b><br>By making use of principal component analysis we can reduce the dimension of the 128 dimension SIFT vector to number of components that we want. I chose 32. This in turn should further optimize the speed at which the code runs as we are now calculating distances on 32 dimension vectors rather than 128. The PCA basis was obtained by analyzing the images from extra data that was provided. The total explained variance from the first 32 components was 57.51% which means there isn't too much redundancy when it comes to the feature vectors. Nonetheless, by making the feature vector 1/4<sup>th</sup> the 57.51% of explained variance was good enough. The timing and accuracy results obtained on the Notre Dame pair of images by making use of kd-tree and PCA can be summarized by the table below:
+</p>
+
+<table border=1 align="center">
+<tr>
+	<th>
+		<h4>kd-tree</h4>
+	</th>
+	<th>
+		<h4>PCA</h4>
+	</th>
+	<th>
+		<h4>Time (seconds)</h4>
+	</th>
+	<th>
+		<h4>Accuracy (%)</h4>
+	</th>
+</tr>
+<tr>
+<td align="center">&#10007</td>
+<td align="center">&#10007</td>
+<td align="center">1.79</td>
+<td align="center">99</td>
+</tr>
+<tr>
+<td align="center">&#10007</td>
+<td align="center">&#10003</td>
+<td align="center">0.41</td>
+<td align="center">96</td>
+</tr>
+<tr>
+<td align="center">&#10003</td>
+<td align="center">&#10007</td>
+<td align="center">7.82</td>
+<td align="center">99</td>
+</tr>
+<tr>
+<td align="center">&#10003</td>
+<td align="center">&#10003</td>
+<td align="center">1.70</td>
+<td align="center">96</td>
+</tr>
+
+</table>
+<br>
+<p>		Here we observe that the accuracy decreases a bit with PCA and this is expected as we are losing information on doing PCA. However, with PCA the speed increases significantly (speedup of at least 4x is achieved). kd-trees in this case perform significantly worse than pairwise distance. I suspect this is due to the fact that in my case I do not have significantly high number of points (the points are in 1000s not millions) and the overhead of a kd-tree is what is slowing it down. </p>
+</div>
+</body>
+</html>
