@@ -1,0 +1,1 @@
+Simply run the proj6_part1.m or proj6_part2.m to run the respective parts.

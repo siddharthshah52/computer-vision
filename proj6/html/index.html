@@ -1,0 +1,190 @@
+<html>
+<head>
+<title>Deep Learning Project</title>
+<link href='http://fonts.googleapis.com/css?family=Nunito:300|Crimson+Text|Droid+Sans+Mono' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" title="Default" href="styles/github.css">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>  
+
+<link rel="stylesheet" href="highlighting/styles/default.css">
+<script src="highlighting/highlight.pack.js"></script>
+
+<style type="text/css">
+body {
+	margin: 0px;
+	width: 100%;
+	font-family: 'Crimson Text', serif;
+	font-size: 20px;
+	background: #fcfcfc;
+}
+h1 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 28px;
+	margin: 25px 0px 0px 0px;
+	text-transform: lowercase;
+
+}
+
+h2 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 32px;
+	margin: 15px 0px 35px 0px;
+	color: #333;	
+	word-spacing: 3px;
+}
+
+h3 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 26px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+h4 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	margin: 10px 0px 10px 0px;
+	color: #333;
+	word-spacing: 2px;
+}
+
+h5 {
+	font-family: 'Nunito', sans-serif;
+	font-weight: normal;
+	font-size: 18px;
+	margin: 10px 0px 10px 0px;
+	color: #111;
+	word-spacing: 2px;
+}
+
+p, li {
+	color: #444;
+}
+
+a {
+	color: #DE3737;
+}
+
+.container {
+	margin: 0px auto 0px auto;
+	width: 1160px;
+}
+
+#header {
+	background: #333;
+	width: 100%;
+}
+
+#headersub {
+	color: #ccc;
+	width: 960px;
+	margin: 0px auto 0px auto;
+	padding: 20px 0px 20px 0px;
+}
+
+.chart {
+	width: 480px;
+}
+.lol {
+	font-size: 16px;
+	color: #888;
+	font-style: italic;
+}
+.sep {
+	height: 1px;
+	width: 100%;
+	background: #999;
+	margin: 20px 0px 20px 0px;
+}
+.footer{
+	font-size: 16px;
+}
+.latex {
+	width: 100%;
+}
+
+.latex img {
+	display: block;
+	margin: 0px auto 0px auto;
+}
+
+pre {
+	font-family: 'Droid Sans Mono';
+	font-size: 14px;
+}
+
+table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td img {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#contents a {
+}
+</style>
+<script type="text/javascript">
+    hljs.initHighlightingOnLoad();
+</script>
+</head>
+<body>
+<div id="header" >
+<div id="headersub">
+<h1>Siddharth Shah (sshah418) </h1>
+</div>
+</div>
+<div class="container">
+
+<h2> Project 6 / Deep Learning</h2>
+
+<p> 	In the following project we will apply deep learning for the 15 scene classification problem. Two different methods will be tried viz. training a network from scratch and fine-tuning VGG network trained on ImageNet data.</p>
+
+<div style="clear:both">
+<h3>Part1: Training a deep network from scratch.</h3>
+
+<p> 	The starter code trains a deep network from scratch on the 15 scene classification data. We will try different methods to improve the accuracy of the network.
+<ol>
+<li>Jitter the data: We randomly flip the images left-right with probability half. The idea is to increase the data by using such data augmentation techniques. This makes the network more robust to such transformations which will not change the label.</li>
+<li>Zero-center the images: I computed the mean of all train images and subtracted it from all the images. This gave a significant boost in the accuracy.</li>
+<li>Regularization: Dropout is a very effective form of regularization in deep neural networks. Basically we zero out certain nodes with a probability of 0.5. This adds some stochasticity to the network reducing it's model complexity. This prevents us from overfitting to the training data.</li>
+<li>Deepening the network: We can improve the performance by adding an extra set of convolution, max-pool and relu layer. This gives our model more power and capability to learn a richer set of functions that model the data better. I also reduced the stride of pool1 layer to 3. I added a convolutional layer with 20 filters of size 5 &times; 5 followed by a pooling layer of window 3 &times; 3 with a stride of 2 after the first set of convolution, max-pool and relu layers. I arrived at these numbers after a bit of experimentation with different sets of values.</li>
+<li>Besides this I used learning rate decay and increased the number of epochs to 100. The lowest validation error obtained is 0.464</li>
+</ol>
+</p>
+
+<p>		Below is the image for train, validation and test curves:<br></p>
+
+<center>
+
+<img src="net-train.png" width="500">
+
+</center>
+
+<h3>Part2: Fine-tuning VGG network</h3>
+<p>		Here, we will make use of the weights learned by the VGG-F network using the ImageNet dataset. Specifically, we will remove the fc8 and softmax layer and reintroduce them with the fc8 output size of 15 instead of 1000. We will also add the missing dropout layers. Some changes to the data pre-processing is also required. Specifically we will reshape images to 224 &times; 224. Since, VGG-F requires color images and that we have grayscale images we will concatenate the gray-scale images repeatedly along the depth axis to make them 3 channel images. We also subtract the average image provided from all the images. I ran 7 epochs and the lowest validation error reached is 0.136. </p>
+
+<p>		Below is the image for train, validation and test curves:<br></p>
+
+<center>
+
+<img src="net-train-part2.png" width="500">
+
+</center>
+
+<p>		Below is the image of filters learned by the network:<br></p>
+
+<center>
+
+<img src="filters.png" width="500">
+
+</center>
+
+</div>
+</body>
+</html>
